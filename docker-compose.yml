@@ -1,0 +1,86 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-codemind_db}
+      MYSQL_USER: ${MYSQL_USER:-codemind}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the project .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the project .env}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - MYSQL_PWD="$${MYSQL_ROOT_PASSWORD}" mysqladmin ping --host=127.0.0.1 --user=root --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_NAME: ${APP_NAME:-CodeMind}
+      DEBUG: ${DEBUG:-false}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER:-codemind}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in the project .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-codemind_db}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in the project .env}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      CODEMIND_STORAGE_DIR: /var/lib/codemind/repositories
+      VECTOR_DB_DIR: /var/lib/codemind/vectors
+    volumes:
+      - repository_data:/var/lib/codemind/repositories
+      - vector_data:/var/lib/codemind/vectors
+      - model_cache:/home/codemind/.cache/huggingface
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health', timeout=3).read()"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mysql_data:
+  repository_data:
+  vector_data:
+  model_cache:
