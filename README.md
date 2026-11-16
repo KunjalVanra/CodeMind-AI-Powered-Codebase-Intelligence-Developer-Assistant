@@ -132,4 +132,151 @@ SECRET_KEY=your_secure_secret_key
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Use the actual environment variable names expected by the backend configuration. Never commit
+Use the actual environment variable names expected by the backend configuration. Never commit real API keys, passwords, or secrets to GitHub.
+
+4. Database Setup
+4. Database Setup
+
+Create a MySQL database:
+
+CREATE DATABASE codemind_db
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+Configure the database connection in your backend environment.
+
+5. Start the Backend
+
+From the backend directory:
+
+python -m uvicorn app.main:app --reload --port 8000
+
+Backend API:
+
+http://127.0.0.1:8000
+
+Interactive API documentation:
+
+http://127.0.0.1:8000/docs
+
+6. Frontend Setup
+
+Open another terminal:
+
+cd frontend
+
+Install dependencies:
+
+npm install
+
+Start the frontend:
+
+npm run dev
+
+Frontend:
+
+http://localhost:5173
+
+🧠 How CodeMind Works
+
+A user registers and logs into the platform.
+
+The user connects a GitHub repository.
+
+CodeMind clones the repository into its storage area.
+
+The source scanner identifies supported files and programming languages.
+
+Code parsers extract code structures and symbols.
+
+The chunking service divides source code into meaningful sections.
+
+Sentence Transformers generates vector embeddings.
+
+ChromaDB stores the embeddings for semantic retrieval.
+
+When a user asks a question, relevant code chunks are retrieved.
+
+The RAG pipeline sends relevant context to the language model and generates an answer with source references.
+
+🔍 Example Use Cases
+
+Understand the purpose of an unfamiliar class or function.
+
+Find code related to a specific feature using natural language.
+
+Explore dependencies between modules.
+
+Generate documentation for existing source code.
+
+Identify potential security vulnerabilities.
+
+Generate unit-test suggestions.
+
+Understand repository architecture and complexity.
+
+🧪 Testing
+
+Run backend tests:
+
+cd backend
+python -m pytest tests -q
+
+Run frontend linting:
+
+cd frontend
+npm run lint
+
+Build the frontend:
+
+npm run build
+
+🔐 Security Considerations
+
+API credentials are stored in environment variables.
+
+Passwords are securely hashed.
+
+JWT-based authentication protects private API operations.
+
+Repository access is restricted by ownership checks.
+
+Generated test code is not automatically executed.
+
+Repository cloning and file scanning use safety restrictions.
+
+🚧 Future Enhancements
+
+Support for additional programming languages.
+
+Advanced code vulnerability detection.
+
+GitHub pull-request analysis.
+
+Automated code review and quality recommendations.
+
+Team collaboration and shared workspaces.
+
+Improved architecture visualization.
+
+More advanced AI-powered debugging assistance.
+
+🎓 Project Information
+
+Project Name: CodeMind — AI-Powered Codebase Intelligence & Developer Assistant
+
+Project Type: Final-Year Computer Engineering Project
+
+Domain: Artificial Intelligence, Generative AI, Software Engineering, Full-Stack Development
+
+Developer: Kunjal Vanra
+
+GitHub Repository: CodeMind
+
+📄 License
+
+This project is currently developed for academic and educational purposes. A license can be added before wider distribution.
+
+<p align="center">
+  <strong>CodeMind — Making complex codebases easier to understand.</strong>
+</p>
